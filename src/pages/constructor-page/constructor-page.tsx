@@ -1,4 +1,9 @@
-import { useSelector } from '../../services/store';
+import { useSelector, useDispatch } from '../../services/store';
+import { useEffect } from 'react';
+import {
+  fetchIngredients,
+  getIngredientsSelector
+} from '../../services/slices/ingredientsSlice';
 
 import styles from './constructor-page.module.css';
 
@@ -9,7 +14,15 @@ import { FC } from 'react';
 
 export const ConstructorPage: FC = () => {
   /** TODO: взять переменную из стора */
-  const isIngredientsLoading = false;
+  const dispatch = useDispatch();
+
+  const { items, isIngredientsLoading, error } = useSelector(
+    getIngredientsSelector
+  );
+
+  useEffect(() => {
+    dispatch(fetchIngredients());
+  }, [dispatch]);
 
   return (
     <>
