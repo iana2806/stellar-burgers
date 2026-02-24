@@ -23,12 +23,12 @@ import { fetchUser } from '../../services/slices/profileSlice';
 
 const App = () => {
   const location = useLocation();
-  const backgroundLocation = location.state?.backgroundLocation;
+  const background = location.state?.background;
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const handleClose = () => {
-    if (backgroundLocation) {
+    if (background) {
       navigate(-1);
     } else {
       navigate('/');
@@ -45,7 +45,7 @@ const App = () => {
       <AppHeader />
 
       {/* Основные маршруты */}
-      <Routes location={backgroundLocation || location}>
+      <Routes location={background || location}>
         <Route path='/' element={<ConstructorPage />} />
         <Route path='/feed' element={<Feed />} />
         <Route path='*' element={<NotFound404 />} />
@@ -62,7 +62,19 @@ const App = () => {
         <Route element={<ProtectedRoute onlyAuth />}>
           <Route path='/profile' element={<Profile />} />
           <Route path='/profile/orders' element={<ProfileOrders />} />
-          <Route path='/profile/orders/:number' element={<OrderInfo />} />
+          <Route
+            path='/profile/orders/:number'
+            element={
+              <div className={styles.detailPageWrap}>
+                <p
+                  className={`text text_type_main-large ${styles.detailHeader}`}
+                >
+                  Детали заказа
+                </p>
+                <OrderInfo />
+              </div>
+            }
+          />
         </Route>
 
         {/* Модальные окна */}
@@ -91,7 +103,7 @@ const App = () => {
       </Routes>
 
       {/* Модальные окна с фоном */}
-      {backgroundLocation && (
+      {background && (
         <Routes>
           <Route
             path='/feed/:number'

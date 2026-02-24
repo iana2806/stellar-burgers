@@ -5,11 +5,12 @@ import {
   getProfileSelector,
   loginUser
 } from '../../services/slices/profileSlice';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 export const Login: FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const { user, error } = useSelector(getProfileSelector);
 
@@ -18,9 +19,10 @@ export const Login: FC = () => {
 
   useEffect(() => {
     if (user) {
-      navigate('/', { replace: true });
+      const from = location.state?.from || '/';
+      navigate(from, { replace: true });
     }
-  }, [user, navigate]);
+  }, [user, navigate, location.state?.from]);
 
   const handleSubmit = (e: SyntheticEvent) => {
     e.preventDefault();

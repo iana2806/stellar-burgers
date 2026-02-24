@@ -9,10 +9,14 @@ import {
   orderRequestSelector
 } from '../../services/slices/currentOrderSlice';
 import { closeOrderModal } from '../../services/slices/currentOrderSlice';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { getProfileSelector } from '../../services/slices/profileSlice';
 
 export const BurgerConstructor: FC = () => {
   /** TODO: взять переменные constructorItems, orderRequest и orderModalData из стора */
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const constructorItems = useSelector((state: RootState) => ({
     bun: state.burgerConstructor.bun || null,
@@ -20,25 +24,36 @@ export const BurgerConstructor: FC = () => {
   }));
   const orderRequest = useSelector(orderRequestSelector);
   const orderModalData = useSelector(orderModalDataSelector);
+  const user = useSelector(getProfileSelector);
 
   const onOrderClick = async () => {
     if (!constructorItems.bun || orderRequest) return;
+
+    if (!user) {
+      navigate('/login', { state: { from: location.pathname } });
+      return;
+    }
 
     const ingredientIds = [
       constructorItems.bun._id,
       ...constructorItems.ingredients.map((i) => i._id),
       constructorItems.bun._id
     ];
+
     try {
       await dispatch(createOrder(ingredientIds)).unwrap();
-    } catch (err) {
-      console.error('Ошибка создания заказа', err);
+      dispatch(clearConstructor());
+    } catch (err: any) {
+      if (err === 'Ошибка авторизации') {
+        navigate('/login', { state: { from: location.pathname } });
+      } else {
+        console.error('Ошибка оформления заказа:', err);
+      }
     }
   };
 
   const handlecloseOrderModal = () => {
     dispatch(closeOrderModal());
-    dispatch(clearConstructor());
   };
 
   const price = useMemo(

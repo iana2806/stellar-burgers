@@ -1,5 +1,5 @@
-import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { getOrdersApi } from '@api';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { getOrderByNumberApi, getOrdersApi } from '@api';
 import { TOrder, TOrdersData } from '@utils-types';
 import { RootState } from '../store';
 
@@ -13,6 +13,20 @@ export const getOrders = createAsyncThunk<TOrdersData>(
       total: orders.length,
       totalToday: orders.length
     };
+  }
+);
+
+// Асинхронный экшен для поиска заказа по номеру
+export const getOrderByNumber = createAsyncThunk<TOrder, number>(
+  'orders/getOrderByNumber',
+  async (number, { rejectWithValue }) => {
+    const data = await getOrderByNumberApi(number);
+
+    if (!data.orders.length) {
+      return rejectWithValue('Заказ не найден');
+    }
+
+    return data.orders[0];
   }
 );
 
@@ -37,6 +51,7 @@ const ordersSlice = createSlice({
   initialState,
   reducers: {},
   extraReducers: (builder) => {
+    //все заказы
     builder
       .addCase(getOrders.pending, (state) => {
         state.isOrdersLoading = true;
@@ -51,6 +66,27 @@ const ordersSlice = createSlice({
       .addCase(getOrders.rejected, (state, action) => {
         state.isOrdersLoading = false;
         state.error = action.error.message || 'Ошибка при загрузке заказов';
+      });
+    //заказ по номеру
+    builder
+      .addCase(getOrderByNumber.pending, (state) => {
+        state.isOrdersLoading = true;
+        state.error = null;
+      })
+      .addCase(getOrderByNumber.fulfilled, (state, action) => {
+        state.isOrdersLoading = false;
+
+        const exists = state.orders.find(
+          (order) => order.number === action.payload.number
+        );
+
+        if (!exists) {
+          state.orders.push(action.payload);
+        }
+      })
+      .addCase(getOrderByNumber.rejected, (state, action) => {
+        state.isOrdersLoading = false;
+        state.error = action.error.message || 'Ошибка при загрузке заказа';
       });
   }
 });

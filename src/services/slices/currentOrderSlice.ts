@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { orderBurgerApi } from '@api';
 import { TOrder } from '@utils-types';
 import { RootState } from '../store';
@@ -20,13 +20,24 @@ const initialState: OrderState = {
 };
 
 // Асинхронный экшен для создания заказа
-export const createOrder = createAsyncThunk<TOrder, string[]>(
-  'order/createOrder',
-  async (ingredientIds) => {
+export const createOrder = createAsyncThunk<
+  TOrder,
+  string[],
+  { state: RootState; rejectValue: string }
+>('order/createOrder', async (ingredientIds, { getState, rejectWithValue }) => {
+  const user = getState().profile.user;
+
+  if (!user) {
+    return rejectWithValue('Ошибка авторизации');
+  }
+
+  try {
     const data = await orderBurgerApi(ingredientIds);
     return data.order;
+  } catch {
+    return rejectWithValue('Ошибка создания заказа');
   }
-);
+});
 
 export const currentOrderSlice = createSlice({
   name: 'order',
