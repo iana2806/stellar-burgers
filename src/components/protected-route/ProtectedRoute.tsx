@@ -15,12 +15,15 @@ export const ProtectedRoute = ({ onlyAuth = false }: ProtectedRouteProps) => {
     return <Preloader />;
   }
 
+  // маршрут только для авторизованных
   if (onlyAuth && !user) {
     return <Navigate to='/login' state={{ from: location }} replace />;
   }
 
+  // маршрут только для НЕавторизованных
   if (!onlyAuth && user) {
-    return <Navigate to='/' replace />;
+    const from = location.state?.from || '/';
+    return <Navigate to={from} replace />;
   }
 
   return <Outlet />;
