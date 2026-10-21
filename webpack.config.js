@@ -54,7 +54,7 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: './public/index.html'
     }),
-    new Dotenv()
+    new Dotenv({ systemvars: true })
   ],
   resolve: {
     extensions: [
@@ -83,7 +83,8 @@ module.exports = {
   },
   output: {
     path: path.resolve(__dirname, './dist'),
-    filename: 'bundle.js'
+    filename: 'bundle.js',
+    publicPath: process.env.PUBLIC_URL || '/'
   },
   devServer: {
     static: path.join(__dirname, './dist'),
